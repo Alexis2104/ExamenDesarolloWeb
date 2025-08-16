@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bienvenido | Juegos del Año</title>
+  <style>
+    :root{
+      --bg:#0b1220;--card:#11192b;--muted:#8ea0c2;--text:#e8eefc;--accent:#4ba3ff;--accent2:#26e6a4;--border:#1d2840;--row:#0f1730;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+      color:var(--text);background:
+        radial-gradient(1200px 600px at 10% -10%, #1a2440 0%, rgba(26,36,64,0) 60%),
+        radial-gradient(800px 400px at 110% 10%, #12233e 0%, rgba(18,35,62,0) 60%),
+        linear-gradient(180deg, #07101c, #0b1220);
+      display:grid;place-items:center;padding:32px;
+    }
+    .wrap{width:min(1100px,100%);animation:fadeIn .6s ease both}
+    header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px}
+    h1{font-size:clamp(24px,4vw,36px);letter-spacing:.3px;margin:0;font-weight:700;line-height:1.1}
+    .greeting{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+    p.lead{margin:6px 0 0;color:var(--muted);font-size:clamp(14px,2.2vw,16px)}
+
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.0));
+      border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);
+      overflow:hidden}
+
+    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--border);background:rgba(9,14,28,.5)}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+    .input,.select,.btn{height:40px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--text);padding:0 12px;outline:none}
+    .input{width:220px}
+    .select{min-width:130px}
+    .btn{cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#08111e;font-weight:600}
+
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    thead th{position:sticky;top:0;background:rgba(8,15,30,.9);backdrop-filter:saturate(140%) blur(6px);text-align:left;font-size:13px;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);padding:12px}
+    tbody td{padding:14px 12px;border-bottom:1px solid var(--border)}
+    tbody tr{background:linear-gradient(180deg,rgba(255,255,255,.01),rgba(255,255,255,0))}
+    tbody tr:hover{background:linear-gradient(180deg,rgba(75,163,255,.08),rgba(38,230,164,.05))}
+
+    .footer{display:flex;justify-content:flex-end;gap:8px;padding:12px;border-top:1px solid var(--border);background:rgba(9,14,28,.5)}
+
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    @media (max-width:720px){.input{flex:1;min-width:160px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1><span class="greeting">¡Bienvenido!</span> Disfruta un vistazo limpio a los <em>Juegos del Año</em>.</h1>
+        <p class="lead">Explora un resumen organizado con filtro por año y búsqueda instantánea.</p>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="toolbar">
+        <div class="controls">
+          <input id="q" class="input" type="search" placeholder="Buscar por juego, estudio, género o plataforma" />
+          <select id="year" class="select"></select>
+        </div>
+        <div class="controls">
+          <button id="add" class="btn">Añadir fila</button>
+          <button id="export" class="btn">Exportar CSV</button>
+          <button id="reset" class="btn">Restablecer</button>
+          <button id="save" class="btn primary">Guardar cambios</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="grid" aria-label="Tabla Juegos del Año">
+          <thead>
+            <tr>
+              <th>Año</th>
+              <th>Juego</th>
+              <th>Estudio</th>
+              <th>Género</th>
+              <th>Plataformas</th>
+              <th>Lanzamiento</th>
+              <th>Puntuación</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="footer">
+        <small style="color:var(--muted)">Tip: haz doble clic en cualquier celda para editarla. Enter para guardar, Esc para cancelar.</small>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const seed = [
+      {anio: 2025, juego: "", estudio: "", genero: "", plataformas: "", lanzamiento: "", puntuacion: ""},
+      {anio: 2024, juego: "", estudio: "", genero: "", plataformas: "", lanzamiento: "", puntuacion: ""},
+      {anio: 2023, juego: "Baldur's Gate 3", estudio: "Larian Studios", genero: "RPG", plataformas: "PC, PS5, XSX|S", lanzamiento: "2023-08-03", puntuacion: "Alto"},
+      {anio: 2022, juego: "Elden Ring", estudio: "FromSoftware", genero: "ARPG", plataformas: "PC, PS, Xbox", lanzamiento: "2022-02-25", puntuacion: "Alto"}
+    ];
+
+    const $ = sel => document.querySelector(sel);
+    const grid = $("#grid tbody");
+    const q = $("#q");
+    const year = $("#year");
+
+    let data = JSON.parse(localStorage.getItem("goty-data") || "null") || seed;
+    let edited = false;
+
+    function uniqueYears(list){
+      return [...new Set(list.map(r => r.anio))].sort((a,b)=>b-a);
+    }
+
+    function fillYearOptions(){
+      const years = ["Todos", ...uniqueYears(data)];
+      year.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join("");
+      year.value = "Todos";
+    }
+
+    function render(){
+      const term = q.value.trim().toLowerCase();
+      const y = year.value;
+      const rows = data.filter(r => (y==="Todos" || String(r.anio)===String(y)) && (
+        !term || Object.values(r).some(v=>String(v).toLowerCase().includes(term))
+      ));
+
+      grid.innerHTML = rows.map((r,i)=>`
+        <tr data-index="${i}">
+          <td data-key="anio">${r.anio}</td>
+          <td data-key="juego">${r.juego}</td>
+          <td data-key="estudio">${r.estudio}</td>
+          <td data-key="genero">${r.genero}</td>
+          <td data-key="plataformas">${r.plataformas}</td>
+          <td data-key="lanzamiento">${r.lanzamiento}</td>
+          <td data-key="puntuacion">${r.puntuacion}</td>
+        </tr>`).join("");
+    }
+
+    function addRow(){
+      const y = new Date().getFullYear();
+      data.unshift({anio:y, juego:"", estudio:"", genero:"", plataformas:"", lanzamiento:"", puntuacion:""});
+      edited = true; render();
+    }
+
+    function toCSV(){
+      const headers = ["anio","juego","estudio","genero","plataformas","lanzamiento","puntuacion"];
+      const lines = [headers.join(",")].concat(data.map(r=>headers.map(h=>`"${String(r[h]??"").replaceAll('"','\"')}"`).join(",")));
+      const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8;"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "juegos-del-ano.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function save(){
+      localStorage.setItem("goty-data", JSON.stringify(data));
+      edited = false;
+    }
+
+    function reset(){
+      data = [...seed];
+      save();
+      render();
+    }
+
+    function startEdit(td){
+      if(td.querySelector('input')) return;
+      const key = td.dataset.key; if(!key) return;
+      const old = td.textContent.trim();
+      const input = document.createElement('input');
+      input.value = old; input.className = 'input'; input.style.height = '32px'; input.style.width='100%';
+      td.innerHTML = ''; td.appendChild(input); input.focus(); input.select();
+      input.addEventListener('keydown', e=>{
+        if(e.key==='Enter'){commit(td, input.value)}
+        if(e.key==='Escape'){td.innerHTML = old}
+      });
+      input.addEventListener('blur', ()=>commit(td, input.value));
+    }
+
+    function commit(td, val){
+      const rowIndex = [...grid.children].indexOf(td.parentElement);
+      const key = td.dataset.key;
+      const yVal = key==='anio' ? Number(val||new Date().getFullYear()) : val;
+      const filtered = data.filter(r => (year.value==="Todos" || String(r.anio)===String(year.value)) && (
+        !q.value || Object.values(r).some(v=>String(v).toLowerCase().includes(q.value.toLowerCase()))
+      ));
+      const globalIndex = data.indexOf(filtered[rowIndex]);
+      if(globalIndex>-1){ data[globalIndex][key] = yVal; edited = true; }
+      td.textContent = val;
+    }
+
+    q.addEventListener('input', render);
+    year.addEventListener('change', render);
+    $("#add").addEventListener('click', addRow);
+    $("#export").addEventListener('click', toCSV);
+    $("#save").addEventListener('click', save);
+    $("#reset").addEventListener('click', reset);
+    grid.addEventListener('dblclick', e=>{ const td = e.target.closest('td'); if(td) startEdit(td); });
+
+    fillYearOptions();
+    render();
+  </script>
+</body>
+</html>
